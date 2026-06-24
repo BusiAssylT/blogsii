@@ -1,0 +1,1531 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Карманный СММщик: мини-система для блога в ChatGPT</title>
+  <meta name="description" content="Пошаговый практикум: настройте мини-систему для блога в ChatGPT, создайте стратега, хранителя идей, редактора и первый пост.">
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --surface: #ffffff;
+      --surface-soft: #fbfaf7;
+      --text: #1f2528;
+      --muted: #687078;
+      --line: #ded8ce;
+      --accent: #0f766e;
+      --accent-dark: #0c5f59;
+      --accent-soft: #dff3ef;
+      --ink: #152628;
+      --warm: #c06f45;
+      --warm-soft: #f5e1d3;
+      --shadow: 0 18px 50px rgba(41, 34, 24, 0.08);
+      --radius: 8px;
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.7), rgba(247,244,238,0.95) 420px),
+        radial-gradient(circle at 16% 8%, rgba(15, 118, 110, 0.12), transparent 28%),
+        radial-gradient(circle at 92% 18%, rgba(192, 111, 69, 0.12), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      line-height: 1.55;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(247, 244, 238, 0.92);
+      border-bottom: 1px solid rgba(222, 216, 206, 0.78);
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 58px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .brand strong {
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .ghost-link,
+    .primary-link,
+    .copy-btn,
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+      white-space: nowrap;
+    }
+
+    .ghost-link,
+    .reset-btn {
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+    }
+
+    .primary-link,
+    .copy-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .ghost-link:hover,
+    .reset-btn:hover {
+      background: #fff;
+      border-color: #c9c1b4;
+    }
+
+    .primary-link:hover,
+    .copy-btn:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .ghost-link:active,
+    .primary-link:active,
+    .copy-btn:active,
+    .reset-btn:active {
+      transform: translateY(1px);
+    }
+
+    .hero {
+      padding: 28px 0 24px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.86fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid rgba(15, 118, 110, 0.24);
+      border-radius: var(--radius);
+      background: rgba(223, 243, 239, 0.68);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin-top: 14px;
+      font-size: clamp(28px, 4vw, 46px);
+    }
+
+    .lead {
+      max-width: 690px;
+      margin: 14px 0 0;
+      color: #41494f;
+      font-size: clamp(16px, 1.65vw, 19px);
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hero-note {
+      max-width: 680px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .access-line {
+      display: none;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 14px;
+      padding: 8px 10px;
+      border: 1px solid rgba(15, 118, 110, 0.22);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .access-line.show {
+      display: block;
+    }
+
+    .summary-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(222, 216, 206, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .progress-card h2 {
+      font-size: 20px;
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .progress-count {
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #ebe5dc;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #2da996);
+      border-radius: 99px;
+      transition: width .24s ease;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .mini-list li {
+      display: flex;
+      gap: 10px;
+      color: #3f474d;
+      font-size: 14px;
+    }
+
+    .mini-list li::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--warm);
+      flex: 0 0 auto;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      padding: 22px 0 70px;
+    }
+
+    .side {
+      position: sticky;
+      top: 88px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .nav-card,
+    .section,
+    .prompt-card,
+    .check-card,
+    .callout,
+    .example-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(222, 216, 206, 0.88);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 32px rgba(41, 34, 24, 0.05);
+    }
+
+    .nav-card {
+      padding: 12px;
+    }
+
+    .nav-card a {
+      display: block;
+      padding: 10px 10px;
+      border-radius: 6px;
+      color: #4f5961;
+      font-size: 14px;
+    }
+
+    .nav-card a:hover {
+      background: var(--surface-soft);
+      color: var(--ink);
+    }
+
+    .nav-card a.active {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .reset-btn {
+      width: 100%;
+      min-height: 40px;
+      font-size: 14px;
+    }
+
+    .content {
+      display: grid;
+      gap: 22px;
+    }
+
+    .section {
+      scroll-margin-top: 88px;
+      padding: clamp(20px, 3vw, 34px);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .step-kicker {
+      margin-bottom: 8px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .section h2 {
+      font-size: clamp(28px, 4vw, 44px);
+    }
+
+    .section h3 {
+      font-size: 22px;
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      margin: 10px 0 0;
+      color: #424a50;
+    }
+
+    .section ul,
+    .section ol {
+      margin: 12px 0 0;
+      padding-left: 22px;
+      color: #424a50;
+    }
+
+    .section li + li {
+      margin-top: 6px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .info-tile {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+    }
+
+    .info-tile strong {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .info-tile span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .video-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .video-card strong {
+      display: block;
+      padding: 12px 14px;
+      color: var(--ink);
+      font-size: 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .video-frame {
+      aspect-ratio: 16 / 9;
+      background: #eee7dc;
+    }
+
+    .video-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .prompt-card {
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .prompt-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .prompt-top strong {
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .copy-btn {
+      min-height: 38px;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      color: #243034;
+      background: #fff;
+      font: 14px/1.55 Consolas, "Courier New", monospace;
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff, #f8f4ee);
+    }
+
+    .callout strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .warm {
+      border-color: rgba(192, 111, 69, 0.28);
+      background: var(--warm-soft);
+    }
+
+    .check-card {
+      margin-top: 18px;
+      padding: 16px;
+    }
+
+    .check-card strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .checks {
+      display: grid;
+      gap: 8px;
+    }
+
+    .check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: #41494f;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .check span {
+      flex: 1;
+    }
+
+    details {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+    }
+
+    summary {
+      padding: 14px 16px;
+      cursor: pointer;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .details-body {
+      display: grid;
+      gap: 12px;
+      padding: 0 16px 16px;
+    }
+
+    .example-card {
+      padding: 14px;
+      box-shadow: none;
+    }
+
+    .example-card h4 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .example-card p {
+      margin: 6px 0 0;
+      font-size: 14px;
+    }
+
+    .route {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .route span {
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .route b {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .finish-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .finish-list li {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+      color: #394147;
+      font-weight: 700;
+    }
+
+    .cta-box {
+      margin-top: 20px;
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .cta-box h3,
+    .cta-box p {
+      color: #fff;
+    }
+
+    .cta-box p {
+      opacity: .86;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      z-index: 40;
+      transform: translateX(-50%) translateY(24px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #fff;
+      box-shadow: var(--shadow);
+      transition: opacity .18s ease, transform .18s ease;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .watermark {
+      position: fixed;
+      right: 14px;
+      bottom: 10px;
+      z-index: 30;
+      max-width: min(420px, calc(100% - 28px));
+      padding: 7px 10px;
+      border: 1px solid rgba(222, 216, 206, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.84);
+      color: rgba(31, 37, 40, 0.62);
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 940px) {
+      .hero-grid,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        position: static;
+        order: -1;
+      }
+
+      .nav-card {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px;
+      }
+
+      .nav-card a {
+        flex: 0 0 auto;
+      }
+
+      .summary-panel {
+        box-shadow: 0 10px 30px rgba(41, 34, 24, 0.06);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        width: min(100% - 22px, var(--max));
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 0;
+      }
+
+      .top-actions {
+        width: 100%;
+      }
+
+      .top-actions a {
+        flex: 1;
+      }
+
+      .hero {
+        padding-top: 28px;
+      }
+
+      .watermark {
+        left: 11px;
+        right: 11px;
+        bottom: 8px;
+        text-align: center;
+      }
+
+      .hero-actions a {
+        width: 100%;
+      }
+
+      .info-grid,
+      .video-grid,
+      .finish-list {
+        grid-template-columns: 1fr;
+      }
+
+      .prompt-top {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .copy-btn {
+        width: 100%;
+      }
+
+      pre {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#start" aria-label="В начало">
+        <strong>Карманный СММщик</strong>
+        <span>мини-система для блога в ChatGPT</span>
+      </a>
+      <div class="top-actions">
+        <a class="ghost-link" href="https://chatgpt.com/" target="_blank" rel="noopener">Открыть ChatGPT</a>
+        <a class="primary-link" href="#final">К финалу</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="start">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Практикум на 40-60 минут</div>
+          <h1>Карманный СММщик: мини-система для блога в ChatGPT</h1>
+          <p class="lead">Настройте рабочее пространство, создайте стратега, хранителя идей, редактора и соберите первый пост из своей мысли.</p>
+          <div class="access-line" id="accessLine"></div>
+          <div class="hero-actions">
+            <a class="primary-link" href="#how">Начать практикум</a>
+            <a class="ghost-link" href="https://chatgpt.com/" target="_blank" rel="noopener">Открыть ChatGPT</a>
+          </div>
+          <p class="hero-note">Эта страница ничего не сохраняет из ваших ответов. Все результаты остаются в вашем ChatGPT, а здесь вы копируете промпты и отмечаете выполненные шаги.</p>
+        </div>
+        <aside class="summary-panel">
+          <div class="progress-card">
+            <h2>Ваш прогресс</h2>
+            <div class="progress-meta">
+              <span>Выполнено шагов</span>
+              <span class="progress-count"><span id="checkedCount">0</span>/<span id="totalCount">0</span></span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+          <ul class="mini-list">
+            <li>Копируете промпт на этой странице.</li>
+            <li>Вставляете его в свой ChatGPT.</li>
+            <li>Работаете внутри своего проекта или чата.</li>
+            <li>Возвращаетесь сюда и отмечаете шаг готовым.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <div class="wrap layout">
+      <aside class="side">
+        <nav class="nav-card" aria-label="Навигация по практикуму">
+          <a href="#how">Как проходить</a>
+          <a href="#workspace">Шаг 1</a>
+          <a href="#strategist">Шаг 2</a>
+          <a href="#keeper">Шаг 3</a>
+          <a href="#editor">Шаг 4</a>
+          <a href="#test">Шаг 5</a>
+          <a href="#final">Финал</a>
+        </nav>
+        <button class="reset-btn" type="button" id="resetProgress">Сбросить прогресс</button>
+      </aside>
+
+      <div class="content">
+        <section class="section" id="how">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Перед началом</div>
+              <h2>Как проходить</h2>
+            </div>
+          </div>
+          <p>Держите открытыми две вкладки: эту страницу и ChatGPT. Если проходите с телефона, откройте ChatGPT в приложении, а эту страницу в браузере.</p>
+          <ol>
+            <li>Смотрите видео к шагу, если нужна опора.</li>
+            <li>Копируете нужный промпт.</li>
+            <li>Вставляете его в ChatGPT.</li>
+            <li>Выполняете действие внутри своего проекта или чата.</li>
+            <li>Возвращаетесь на страницу и отмечаете шаг готовым.</li>
+          </ol>
+          <div class="info-grid">
+            <div class="info-tile">
+              <strong>Время</strong>
+              <span>40-60 минут на базовую сборку.</span>
+            </div>
+            <div class="info-tile">
+              <strong>Нужно</strong>
+              <span>ChatGPT и 1-3 сырые идеи для блога.</span>
+            </div>
+            <div class="info-tile">
+              <strong>Итог</strong>
+              <span>Первый пост и понятный порядок работы.</span>
+            </div>
+          </div>
+          <div class="callout">
+            <strong>Про холст, PDF и источники</strong>
+            <p>Не нужно делать отдельный файл после каждого шага. Главный документ, который стоит сохранить и загрузить в проект как источник, — это база блога после шага “Стратег”. Остальные результаты можно оставлять в холсте, заметке или внутри проекта.</p>
+          </div>
+        </section>
+
+        <section class="section" id="workspace">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Шаг 1</div>
+              <h2>Рабочее пространство</h2>
+            </div>
+          </div>
+          <p>Создайте отдельное место для блога, чтобы идеи, тексты, продукты и настройки не жили в случайных чатах.</p>
+
+          <h3>Видео-инструкции</h3>
+          <div class="video-grid">
+            <div class="video-card">
+              <strong>Персонализация ChatGPT</strong>
+              <div class="video-frame"><iframe src="https://drive.google.com/file/d/1vsf-Lti7J2m28cuHmLB083N0yndhZqOo/preview" allow="autoplay" title="Персонализация ChatGPT"></iframe></div>
+            </div>
+            <div class="video-card">
+              <strong>Создание проекта</strong>
+              <div class="video-frame"><iframe src="https://drive.google.com/file/d/1DAFichT2tDKHd-fG961DaX2LQ-c2bNbe/preview" allow="autoplay" title="Создание проекта"></iframe></div>
+            </div>
+            <div class="video-card">
+              <strong>Настройка проекта</strong>
+              <div class="video-frame"><iframe src="https://drive.google.com/file/d/15_r-9KZ_eQhmHe6NjYbmqfCi4ft-d81Q/preview" allow="autoplay" title="Настройка проекта"></iframe></div>
+            </div>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Персонализация в настройках</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-personal">Скопировать</button>
+            </div>
+            <pre id="prompt-personal">Важно:
+
+- не придумывать факты и не строить догадки;
+- если не хватает данных — прямо сообщать об этом;
+- использовать только проверенные источники;
+- не достраивать за меня идеи без оснований;
+- отделять факты от идей и давать рекомендации по проверке сомнительных данных;
+- относиться к моим идеям критически и беспристрастно;
+- показывать слабые места и риски;
+- если запрос не совсем понятен, задавать уточняющие вопросы, но только в случаях реальной необходимости;
+- предлагать альтернативные варианты, если видишь более сильное решение.</pre>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Инструкция для проекта “Мой блог”</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-project">Скопировать</button>
+            </div>
+            <pre id="prompt-project">Это мой основной проект для работы с блогом. Моя ниша — [вставьте нишу].
+
+Внутри этого проекта мы собираем систему ведения блога вокруг моего опыта, знаний, аудитории и продуктов.
+
+Главная цель проекта:
+создать блог, который привлекает нужную аудиторию, помогает выстраивать доверие и поддерживает продажи через контент.
+
+В рамках этого проекта помогай мне:
+
+- сохранять единый контекст блога;
+- учитывать особенности моей аудитории;
+- учитывать мои продукты и услуги;
+- поддерживать целостность позиционирования;
+- связывать контент с задачами бизнеса.
+
+Все обсуждения внутри проекта относятся к развитию блога и контентной системы.</pre>
+          </div>
+
+          <div class="check-card">
+            <strong>Проверьте результат</strong>
+            <div class="checks">
+              <label class="check"><input type="checkbox" data-check="workspace-project"><span>Проект “Мой блог” создан.</span></label>
+              <label class="check"><input type="checkbox" data-check="workspace-personal"><span>Персонализация заполнена.</span></label>
+              <label class="check"><input type="checkbox" data-check="workspace-instruction"><span>Инструкция проекта вставлена.</span></label>
+              <label class="check"><input type="checkbox" data-check="workspace-retell"><span>ChatGPT пересказал, как понял задачу проекта.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="strategist">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Шаг 2</div>
+              <h2>Стратег</h2>
+            </div>
+          </div>
+          <p>Это главный системный шаг. Стратег помогает думать о блоге: находить темы, видеть интересы аудитории, связывать контент с продуктами и не писать “просто ради постов”.</p>
+
+          <h3>Видео-инструкции</h3>
+          <div class="video-grid">
+            <div class="video-card">
+              <strong>Создание стратега</strong>
+              <div class="video-frame"><iframe src="https://drive.google.com/file/d/15OOxkvihP6pVTt9yaa-cSXZXFphZG6rc/preview" allow="autoplay" title="Создание стратега"></iframe></div>
+            </div>
+            <div class="video-card">
+              <strong>Холст в источник проекта</strong>
+              <div class="video-frame"><iframe src="https://drive.google.com/file/d/143oYGVsn3X51PmcamPayLlHxJ8-HYDCm/preview" allow="autoplay" title="Холст в источник проекта"></iframe></div>
+            </div>
+          </div>
+
+          <div class="callout warm">
+            <strong>Важно сохранить базу блога как источник</strong>
+            <p>После ответа Стратега попросите открыть базу в холсте, проверьте и поправьте её, скачайте в Markdown или нужном формате и загрузите файл обратно в проект “Мой блог” как источник. Этот документ станет опорой для следующих чатов.</p>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Основной промпт стратега</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-strategist">Скопировать</button>
+            </div>
+            <pre id="prompt-strategist">Ты мой контент-стратег для блога.
+
+Твоя задача — помогать мне принимать решения по развитию блога и превращать мой опыт в понятную систему контента.
+
+Помогай мне:
+
+- находить сильные темы;
+- видеть интересы и боли аудитории;
+- формулировать позиционирование;
+- выстраивать контентную стратегию;
+- связывать контент с моими продуктами и услугами;
+- находить идеи для постов, каруселей и видео.
+
+Когда я даю идею или ситуацию:
+
+1. Выделяй главную мысль.
+2. Показывай, почему это может быть интересно аудитории.
+3. Предлагай несколько углов подачи.
+4. Подсказывай, как это связано с моими продуктами.
+
+Твоя задача не писать контент за меня, а помогать находить наиболее сильные направления и решения.</pre>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Промпт для первого запуска</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-strategist-start">Скопировать</button>
+            </div>
+            <pre id="prompt-strategist-start">Помоги мне собрать базу для блога.
+
+Задай мне вопросы по очереди, чтобы понять:
+
+- кто я и в чём моя экспертиза;
+- для кого я веду блог;
+- какие продукты или услуги хочу продавать;
+- с какими проблемами ко мне приходят люди;
+- какие темы мне важно раскрывать;
+- какие мысли я чаще всего повторяю клиентам или аудитории.
+
+После моих ответов собери краткую базу блога: позиционирование, потенциальные клиенты, продукты, ключевые темы и первые направления для контента.</pre>
+          </div>
+
+          <details>
+            <summary>Дополнительные промпты для стратега</summary>
+            <div class="details-body">
+              <div class="prompt-card">
+                <div class="prompt-top">
+                  <strong>Докопаться до сути проблемы</strong>
+                  <button class="copy-btn" type="button" data-copy-target="prompt-problem">Скопировать</button>
+                </div>
+                <pre id="prompt-problem">Помоги мне разобраться. Я хочу создать [продукт/воронку/идею].
+
+Не соглашайся со мной автоматически и не пытайся поддержать идею только потому что она моя.
+
+Посмотри на ситуацию как независимый консультант.
+
+Скажи:
+
+- что в этой идее сильного;
+- что слабого;
+- где я могу ошибаться;
+- какие риски не замечаю;
+- что бы ты сделал по-другому.
+
+Если данных недостаточно — скажи прямо.
+Не придумывай.</pre>
+              </div>
+
+              <div class="prompt-card">
+                <div class="prompt-top">
+                  <strong>Придумать контент из мысли</strong>
+                  <button class="copy-btn" type="button" data-copy-target="prompt-content-idea">Скопировать</button>
+                </div>
+                <pre id="prompt-content-idea">Я сейчас скину мысль.
+
+Не делай из неё сразу контент.
+
+Сначала помоги найти:
+
+- главный конфликт;
+- неожиданную мысль;
+- что здесь может узнать себя аудитория;
+- где тут переосмысление;
+- где тут эмоция.
+
+Только потом предложи варианты подачи.</pre>
+              </div>
+
+              <div class="prompt-card">
+                <div class="prompt-top">
+                  <strong>Посмотреть на блог как на систему</strong>
+                  <button class="copy-btn" type="button" data-copy-target="prompt-system-view">Скопировать</button>
+                </div>
+                <pre id="prompt-system-view">Помоги посмотреть на мой блог как на систему.
+
+Не оценивай отдельные посты.
+
+Посмотри:
+
+- как человек попадает в блог;
+- что понимает про меня за первые минуты;
+- почему остаётся или уходит;
+- какие смыслы повторяются;
+- что помогает продажам;
+- что мешает.
+
+Смотри на блог целиком.</pre>
+              </div>
+            </div>
+          </details>
+
+          <div class="callout">
+            <strong>С чем обращаться к Стратегу</strong>
+            <p>Позиционирование, потенциальные клиенты, продукты, путь клиента от Reels до покупки, оформление блога, постоянные темы, серии, сторис, лента, пробный режим, карусели, Reels и план на месяц.</p>
+          </div>
+
+          <div class="check-card">
+            <strong>Проверьте результат</strong>
+            <div class="checks">
+              <label class="check"><input type="checkbox" data-check="strategist-created"><span>Стратег создан.</span></label>
+              <label class="check"><input type="checkbox" data-check="strategist-base"><span>База блога собрана.</span></label>
+              <label class="check"><input type="checkbox" data-check="strategist-canvas"><span>База открыта в холсте.</span></label>
+              <label class="check"><input type="checkbox" data-check="strategist-source"><span>Файл загружен в проект как источник.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="keeper">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Шаг 3</div>
+              <h2>Хранитель идей</h2>
+            </div>
+          </div>
+          <p>Создайте помощника, который помогает не терять мысли, заметки, фразы клиентов и будущие темы.</p>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Промпт хранителя идей</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-keeper">Скопировать</button>
+            </div>
+            <pre id="prompt-keeper">Ты мой хранитель идей для блога.
+
+Твоя задача — помогать мне не терять мысли, заметки, наблюдения, фразы клиентов и идеи для контента.
+
+Когда я присылаю сырые идеи, не превращай их сразу в посты.
+
+Сначала разложи их по категориям:
+
+1. Сырые мысли.
+2. Истории из жизни или работы.
+3. Фразы клиентов или аудитории.
+4. Наблюдения.
+5. Возможные темы для постов.
+6. Возможные темы для каруселей.
+7. Возможные темы для коротких видео.
+8. Идеи для серий.
+9. Незавершённые мысли, которые нужно докрутить.
+
+Для каждой идеи добавь:
+
+- короткое название;
+- почему она может быть ценной;
+- какой формат подойдёт;
+- с каким продуктом или темой она может быть связана;
+- что нужно уточнить, чтобы превратить её в контент.
+
+Не выбрасывай слабые идеи. Помечай их как “нужно докрутить”.</pre>
+          </div>
+
+          <details open>
+            <summary>Примеры того, что можно отправлять Хранителю</summary>
+            <div class="details-body">
+              <div class="example-card">
+                <h4>Мысль после работы с клиентом</h4>
+                <p>Сегодня заметила, что клиентка третий месяц пытается вести блог, но каждый раз ищет новую стратегию вместо того, чтобы внедрить старую.</p>
+              </div>
+              <div class="example-card">
+                <h4>Личное наблюдение</h4>
+                <p>Сегодня снова поймала себя на том, что открыла ChatGPT, хотя на самом деле не понимала, какую задачу хочу решить.</p>
+              </div>
+              <div class="example-card">
+                <h4>Фраза клиента</h4>
+                <p>Я вроде бы веду блог, но ощущение, что каждый пост живет отдельной жизнью.</p>
+              </div>
+              <div class="example-card">
+                <h4>Ситуация из жизни</h4>
+                <p>Сегодня записала идею в заметки и поняла, что уже записывала такую же месяц назад.</p>
+              </div>
+              <div class="example-card">
+                <h4>Раздражение</h4>
+                <p>Меня раздражает, когда люди ищут идеальный промпт вместо того, чтобы разобраться в своей системе работы.</p>
+              </div>
+              <div class="example-card">
+                <h4>Неожиданный вывод</h4>
+                <p>Кажется, чем больше становится инструментов ИИ, тем больше люди устают.</p>
+              </div>
+            </div>
+          </details>
+
+          <div class="check-card">
+            <strong>Проверьте результат</strong>
+            <div class="checks">
+              <label class="check"><input type="checkbox" data-check="keeper-created"><span>Хранитель идей создан.</span></label>
+              <label class="check"><input type="checkbox" data-check="keeper-ideas"><span>Первые мысли отправлены.</span></label>
+              <label class="check"><input type="checkbox" data-check="keeper-sorted"><span>Идеи разложены по категориям.</span></label>
+              <label class="check"><input type="checkbox" data-check="keeper-selected"><span>Выбрана идея для первого поста.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="editor">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Шаг 4</div>
+              <h2>Редактор контента</h2>
+            </div>
+          </div>
+          <p>Создайте помощника, который превращает одну мысль в понятный материал: пост, карусель, сторис или короткое видео.</p>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Промпт редактора</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-editor">Скопировать</button>
+            </div>
+            <pre id="prompt-editor">Ты мой редактор контента для блога.
+
+Твоя задача — помогать превращать мои мысли, заметки и идеи в понятные материалы для блога: посты, карусели, сторис и короткие видео.
+
+Ты работаешь не как генератор случайных текстов, а как редактор, который помогает сохранить мой смысл и сделать его понятным для аудитории.
+
+Когда я даю мысль:
+
+1. Сначала выдели главную идею.
+2. Покажи, что здесь может быть интересно аудитории.
+3. Предложи 3 угла подачи.
+4. Предложи форматы: пост, карусель, сторис, короткое видео.
+5. Для выбранного формата собери структуру.
+6. Напиши черновик.
+7. В конце предложи мягкий призыв к действию.
+
+Пиши живо, понятно и без лишнего пафоса.
+Не делай текст “красивым ради красивого”.
+Главное — смысл, ясность и ощущение, что это написано человеком.</pre>
+          </div>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Подготовка идеи к тексту</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-editor-prepare">Скопировать</button>
+            </div>
+            <pre id="prompt-editor-prepare">Не делай из этой идеи сразу пост.
+
+Сначала найди:
+
+- главную мысль;
+- главный конфликт;
+- эмоцию;
+- что здесь узнает в себе аудитория;
+- какой формат подойдёт лучше всего.
+
+Потом предложи 3 варианта подачи и объясни, какой выбрать первым.
+
+Идея:
+[вставьте идею]</pre>
+          </div>
+
+          <details>
+            <summary>Примеры запросов к Редактору</summary>
+            <div class="details-body">
+              <div class="example-card">
+                <h4>Из идеи в пост</h4>
+                <p>Сделай пост. Идея: большинство экспертов знают намного больше, чем показывают в блоге. Задача: помочь человеку узнать себя. Действие: сохранить пост.</p>
+              </div>
+              <div class="example-card">
+                <h4>Из наблюдения в карусель</h4>
+                <p>Сделай карусель. Идея: люди постоянно ищут новые стратегии вместо того, чтобы внедрить старые. Задача: переосмысление. Действие: написать мне в директ.</p>
+              </div>
+              <div class="example-card">
+                <h4>Из истории в видео</h4>
+                <p>Сделай структуру видео. История: я открыла ChatGPT и поняла, что проблема была не в промпте, а в том, что я сама не понимала задачу.</p>
+              </div>
+              <div class="example-card">
+                <h4>Из клиентского случая</h4>
+                <p>Сделай пост. Ситуация клиента: она ведет блог уже несколько месяцев, но ощущение, что каждый пост живет отдельной жизнью. Задача: показать важность системы.</p>
+              </div>
+            </div>
+          </details>
+
+          <div class="check-card">
+            <strong>Проверьте результат</strong>
+            <div class="checks">
+              <label class="check"><input type="checkbox" data-check="editor-created"><span>Редактор создан.</span></label>
+              <label class="check"><input type="checkbox" data-check="editor-idea"><span>Одна идея выбрана.</span></label>
+              <label class="check"><input type="checkbox" data-check="editor-angle"><span>Найден конфликт и подача.</span></label>
+              <label class="check"><input type="checkbox" data-check="editor-draft"><span>Черновик получен.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="test">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Шаг 5</div>
+              <h2>Первый пост</h2>
+            </div>
+          </div>
+          <p>Теперь один раз пройдите путь руками: возьмите мысль и доведите её до готового черновика.</p>
+
+          <div class="route" aria-label="Цепочка работы">
+            <span>идея</span><b>→</b><span>хранитель идей</span><b>→</b><span>редактор</span><b>→</b><span>готовый пост</span>
+          </div>
+
+          <h3>Контрольный маршрут</h3>
+          <ol>
+            <li>Возьмите одну сырую мысль из головы, заметок или банка идей.</li>
+            <li>Отправьте её Хранителю идей.</li>
+            <li>Попросите определить категорию, ценность и возможный формат.</li>
+            <li>Перенесите результат Редактору.</li>
+            <li>Получите черновик поста.</li>
+            <li>Откройте его в холсте.</li>
+            <li>Отредактируйте руками: уберите лишнее, добавьте свой голос, уточните призыв к действию.</li>
+            <li>Сохраните финальную версию.</li>
+          </ol>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Чек-лист готового поста</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-post-check">Скопировать</button>
+            </div>
+            <pre id="prompt-post-check">Проверь мой черновик поста по чек-листу:
+
+1. Понятна ли главная мысль?
+2. Есть ли в начале зацепка?
+3. Узнает ли аудитория себя?
+4. Не звучит ли текст слишком общо?
+5. Есть ли конкретика из моего опыта?
+6. Понятно ли, что человеку делать дальше?
+7. Звучит ли текст как я, а не как шаблонный ChatGPT?
+
+После проверки предложи, что улучшить, но не переписывай весь текст без необходимости.</pre>
+          </div>
+
+          <div class="check-card">
+            <strong>Проверьте результат</strong>
+            <div class="checks">
+              <label class="check"><input type="checkbox" data-check="test-raw"><span>Сырая мысль выбрана.</span></label>
+              <label class="check"><input type="checkbox" data-check="test-keeper"><span>Идея прошла через Хранителя.</span></label>
+              <label class="check"><input type="checkbox" data-check="test-editor"><span>Идея перенесена Редактору.</span></label>
+              <label class="check"><input type="checkbox" data-check="test-post"><span>Первый черновик поста получен.</span></label>
+              <label class="check"><input type="checkbox" data-check="test-edited"><span>Черновик отредактирован вручную.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="final">
+          <div class="section-head">
+            <div>
+              <div class="step-kicker">Финал</div>
+              <h2>Что у вас теперь есть</h2>
+            </div>
+          </div>
+          <ul class="finish-list">
+            <li>Рабочее пространство для блога</li>
+            <li>Базовая инструкция для ChatGPT</li>
+            <li>Стратег</li>
+            <li>База блога как источник</li>
+            <li>Хранитель идей</li>
+            <li>Редактор контента</li>
+            <li>Первая идея</li>
+            <li>Первый черновик поста</li>
+          </ul>
+
+          <div class="prompt-card">
+            <div class="prompt-top">
+              <strong>Вопросы самодиагностики</strong>
+              <button class="copy-btn" type="button" data-copy-target="prompt-self-check">Скопировать</button>
+            </div>
+            <pre id="prompt-self-check">Помоги мне провести самодиагностику мини-системы для блога.
+
+Вот что я уже собрала:
+- рабочее пространство для блога;
+- стратег;
+- база блога;
+- хранитель идей;
+- редактор;
+- первый черновик поста.
+
+Задай мне вопросы и помоги понять:
+1. На каком шаге было легче всего?
+2. Где я зависла: в идеях, стратегии, тексте или финальной правке?
+3. Чего системе не хватает сейчас?
+4. Что стоит настроить глубже?
+5. Мне хватает ручной мини-системы или нужен готовый рабочий процесс?</pre>
+          </div>
+
+          <h3>Чем мини-система отличается от Карманного СММщика</h3>
+          <p>Эта мини-система помогает понять механику и уже навести порядок. Но она всё ещё ручная: вы сами переносите идеи, обновляете контекст, проверяете связки, сохраняете файлы и доводите материалы до публикации.</p>
+          <div class="callout">
+            <strong>Что полноценный Карманный СММщик уже может делать за вас</strong>
+            <ul>
+              <li>утренний и вечерний опрос по идеям и наблюдениям;</li>
+              <li>составление плана на неделю;</li>
+              <li>создание текстов для постов, каруселей, сценариев, подписей под видео и блоков сторис;</li>
+              <li>создание визуала для постов, каруселей и обложек видео в вашем стиле;</li>
+              <li>публикация постов и каруселей;</li>
+              <li>напоминание о публикации сторис и видео.</li>
+            </ul>
+          </div>
+
+          <div class="cta-box">
+            <h3>Хотите собрать ИИ-опору глубже под ваш блог?</h3>
+            <p>Приходите на индивидуальный разбор. Посмотрим ваш блог, продукты, ручные точки хаоса и поймём, что вам нужнее: настройка ChatGPT, мини-система или полноценный Карманный СММщик.</p>
+            <div class="hero-actions">
+              <a class="primary-link" href="https://wa.me/77054897959?text=%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%D0%B8%D0%BD%D0%B4%D0%B8%D0%B2%D0%B8%D0%B4%D1%83%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D1%80%D0%B0%D0%B7%D0%B1%D0%BE%D1%80%20%D0%98%D0%98-%D0%BE%D0%BF%D0%BE%D1%80%D1%8B" target="_blank" rel="noopener">Записаться на разбор</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
+  <div class="watermark" id="watermark">Материал для личного использования. Пожалуйста, не пересылайте ссылку.</div>
+
+  <script>
+    const storageKey = "pocket-smm-mini-progress";
+    const checks = Array.from(document.querySelectorAll("[data-check]"));
+    const checkedCount = document.getElementById("checkedCount");
+    const totalCount = document.getElementById("totalCount");
+    const progressFill = document.getElementById("progressFill");
+    const toast = document.getElementById("toast");
+    const accessLine = document.getElementById("accessLine");
+    const watermark = document.getElementById("watermark");
+    const navLinks = Array.from(document.querySelectorAll(".nav-card a"));
+    const sections = navLinks
+      .map((link) => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+
+    function readProgress() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function writeProgress(progress) {
+      localStorage.setItem(storageKey, JSON.stringify(progress));
+    }
+
+    function updateProgress() {
+      const done = checks.filter((check) => check.checked).length;
+      const total = checks.length;
+      checkedCount.textContent = done;
+      totalCount.textContent = total;
+      progressFill.style.width = total ? `${Math.round((done / total) * 100)}%` : "0%";
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function setupAccessLabel() {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get("name");
+      const until = params.get("until");
+      const order = params.get("order");
+      const parts = [];
+
+      if (name) parts.push(`Доступ для: ${name}`);
+      if (until) parts.push(`активен до ${until}`);
+      if (order) parts.push(`заказ ${order}`);
+
+      if (parts.length) {
+        const label = parts.join(" · ");
+        accessLine.textContent = label;
+        accessLine.classList.add("show");
+        watermark.textContent = `${label}. Материал для личного использования.`;
+      }
+    }
+
+    const saved = readProgress();
+    checks.forEach((check) => {
+      const id = check.dataset.check;
+      check.checked = Boolean(saved[id]);
+      check.addEventListener("change", () => {
+        const progress = readProgress();
+        progress[id] = check.checked;
+        writeProgress(progress);
+        updateProgress();
+      });
+    });
+    updateProgress();
+    setupAccessLabel();
+
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        const text = target ? target.innerText.trim() : "";
+        if (!text) return;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Промпт скопирован");
+        } catch {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.setAttribute("readonly", "");
+          area.style.position = "fixed";
+          area.style.opacity = "0";
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand("copy");
+          area.remove();
+          showToast("Промпт скопирован");
+        }
+      });
+    });
+
+    document.getElementById("resetProgress").addEventListener("click", () => {
+      localStorage.removeItem(storageKey);
+      checks.forEach((check) => {
+        check.checked = false;
+      });
+      updateProgress();
+      showToast("Прогресс сброшен");
+    });
+
+    function setActiveNav() {
+      let current = sections[0];
+      const offset = 130;
+      sections.forEach((section) => {
+        if (section.getBoundingClientRect().top <= offset) current = section;
+      });
+
+      navLinks.forEach((link) => {
+        link.classList.toggle("active", current && link.getAttribute("href") === `#${current.id}`);
+      });
+    }
+
+    setActiveNav();
+    window.addEventListener("scroll", setActiveNav, { passive: true });
+  </script>
+</body>
+</html>
