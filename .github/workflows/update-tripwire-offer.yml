@@ -84,3 +84,4 @@ jobs:
           git add index.html .github/workflows/update-tripwire-offer.yml
           git commit -m "Update tripwire offer CTA" || exit 0
           git push
+# trigger: 2026-07-20
