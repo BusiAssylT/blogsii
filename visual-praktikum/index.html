@@ -322,7 +322,7 @@
         <div>
           <div class="eyebrow">Практикум на 20–25 минут</div>
           <h1>Карусели и обложки в вашем стиле с ChatGPT</h1>
-          <p class="lead">Один раз объясните ChatGPT, какое оформление вам нравится. Включите режим «Мой визуал» в текущем чате и сразу проверьте правила на своей карусели.</p>
+          <p class="lead">Создадим ИИ-ассистента, который будет создавать карусели и обложки.</p>
           <div class="access-line" id="accessLine"></div>
           <div class="hero-actions">
             <a class="primary-link" href="#how">Начать практикум</a>
@@ -330,7 +330,7 @@
           </div>
           <p class="hero-note">Эта страница не сохраняет ваши ответы. Всё остаётся в вашем ChatGPT. Здесь вы копируете готовые запросы и отмечаете, что уже сделали.</p>
         </div>
-        <aside class="summary-panel">
+        <aside class="summary-panel" id="progress">
           <div class="progress-card">
             <h2>Ваш прогресс</h2>
             <div class="progress-meta">
@@ -352,7 +352,7 @@
     <div class="wrap layout">
       <aside class="side">
         <nav class="nav-card" aria-label="Навигация по практикуму">
-          <a href="#how">Как проходить</a>
+          <a href="#progress">Ваш прогресс</a>
           <a href="#base">Шаг 1</a>
           <a href="#reactor">Отдельный чат — по желанию</a>
           <a href="#formats">Шаг 2</a>
@@ -385,7 +385,7 @@
           </div>
           <div class="callout">
             <strong>Что получится</strong>
-            <p>Вам не придётся каждый раз заново объяснять свой вкус. ChatGPT будет опираться на сохранённые правила, а вы сможете создавать и исправлять оформление готовыми запросами.</p>
+            <p>Вам не придётся каждый раз заново объяснять свой вкус. ChatGPT будет опираться на сохранённые правила, а вы сможете создавать и исправлять оформление готовыми запросами/промптами.</p>
           </div>
         </section>
 
@@ -400,7 +400,7 @@
 
           <div class="prompt-card">
             <div class="prompt-top">
-              <strong>Запрос, который соберёт правила оформления</strong>
+              <strong>Промпт, который соберёт правила оформления</strong>
               <button class="copy-btn" type="button" data-copy-target="prompt-base">Скопировать</button>
             </div>
             <pre id="prompt-base">Помоги мне записать правила оформления моего блога.
@@ -486,7 +486,7 @@
 
           <div class="prompt-card">
             <div class="prompt-top">
-              <strong>Первый запрос для чата «Мой визуал»</strong>
+              <strong>Первый промпт для чата «Мой визуал»</strong>
               <button class="copy-btn" type="button" data-copy-target="prompt-reactor">Скопировать</button>
             </div>
             <pre id="prompt-reactor">Ты помогаешь мне создавать оформление для блога.
@@ -519,7 +519,7 @@
           <div class="section-head">
             <div>
               <div class="step-kicker">Шаг 2</div>
-              <h2>Создавайте и исправляйте оформление готовыми запросами</h2>
+              <h2>Создавайте и исправляйте оформление готовыми промптами</h2>
             </div>
           </div>
           <p>Выберите, что нужно сделать сейчас: карусель, обложку, отдельное изображение или фото. Не нужно каждый раз вспоминать, что написать ChatGPT.</p>
@@ -573,7 +573,7 @@
 
           <div class="prompt-card">
             <div class="prompt-top">
-              <strong>Сделать отдельное изображение для поста</strong>
+              <strong>Сделать одиночный пост</strong>
               <button class="copy-btn" type="button" data-copy-target="prompt-post-visual">Скопировать</button>
             </div>
             <pre id="prompt-post-visual">Создай изображение для поста по моим правилам оформления.
