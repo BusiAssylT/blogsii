@@ -219,6 +219,12 @@
     .callout strong { display: block; color: var(--ink); margin-bottom: 6px; }
     .warm { border-color: rgba(192, 111, 69, 0.28); background: var(--warm-soft); }
 
+    .video-card { overflow: hidden; margin-top: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+    .video-caption { padding: 14px 16px; background: var(--surface-soft); }
+    .video-caption strong { display: block; color: var(--ink); font-size: 16px; }
+    .video-frame { aspect-ratio: 16 / 9; background: #101719; }
+    .video-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+
     .check-card { margin-top: 18px; padding: 16px; }
     .check-card strong { display: block; color: var(--ink); margin-bottom: 10px; }
     .checks { display: grid; gap: 8px; }
@@ -398,6 +404,13 @@
           </div>
           <p>Сначала переведём ваш вкус в понятные слова: какое впечатление должно оставаться, какие цвета и шрифты подходят, как должны выглядеть ваши фото, карусели и обложки.</p>
 
+          <div class="video-card">
+            <div class="video-caption"><strong>Видео: создаём правила оформления</strong></div>
+            <div class="video-frame">
+              <iframe src="https://drive.google.com/file/d/1hFClaVqJiKCOMZXfjuXDqG63M55D7k3p/preview" title="Как создать правила оформления" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
+          </div>
+
           <div class="prompt-card">
             <div class="prompt-top">
               <strong>Промпт, который соберёт правила оформления</strong>
@@ -449,6 +462,13 @@
           <div class="callout warm">
             <strong>Как продолжить в этом же чате</strong>
             <p>Если правила открылись на холсте, оставайтесь в этом чате и переходите к запросу ниже. Если ChatGPT создал документ Word, сохраните его на компьютер, внесите нужные исправления и загрузите готовый файл обратно в этот же чат.</p>
+          </div>
+
+          <div class="video-card">
+            <div class="video-caption"><strong>Видео: текущий режим или отдельный чат</strong></div>
+            <div class="video-frame">
+              <iframe src="https://drive.google.com/file/d/1M7oajdr1jerL_r5Rsq3p6QGQ37C4u-Nx/preview" title="Как выбрать режим или отдельный чат" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
           </div>
 
           <div class="prompt-card">
@@ -546,6 +566,18 @@
 Формат: 4:5. Текст не редактируй и не сокращай. Генерируй строго по одному слайду. Начни со слайда 1 и дождись моей команды перед следующим.</pre>
           </div>
 
+          <div class="video-card">
+            <div class="video-caption"><strong>Видео: создаём карусель</strong></div>
+            <div class="video-frame">
+              <iframe src="https://drive.google.com/file/d/1r5eHOfXO--xwWIdUTv0W_qVtMx_YF4tj/preview" title="Как создать карусель" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
+          </div>
+
+          <div class="callout warm">
+            <strong>Обложки и одиночные посты создаются так же</strong>
+            <p>Скопируйте подходящий промпт ниже, вставьте свои данные и отправьте его на генерацию. Если хотите использовать своё фото, прикрепите его к сообщению и напомните ChatGPT использовать это фото как фон для обложки или одиночного поста.</p>
+          </div>
+
           <div class="prompt-card">
             <div class="prompt-top">
               <strong>Сделать обложку для видео</strong>
@@ -604,10 +636,16 @@
           </div>
           <p>Главное правило: просите изменить одну деталь и сразу перечисляйте, что нужно оставить без изменений.</p>
 
-          <!-- VIDEO SLOT: как использовать «Редактировать», смену формата и комментарии к изображению -->
+          <div class="video-card">
+            <div class="video-caption"><strong>Видео: исправляем отдельную деталь</strong></div>
+            <div class="video-frame">
+              <iframe src="https://drive.google.com/file/d/189nNpUbvOJFfO49xtlO4MgvhCYP5vZhU/preview" title="Как точечно исправить изображение" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
+          </div>
+
           <div class="callout warm">
             <strong>Как точечно исправить готовое изображение</strong>
-            <p>Откройте изображение в ChatGPT и нажмите «Редактировать». Если нужно поменять пропорции, выберите кнопку изменения формата. Если нужно поправить отдельную деталь, напишите короткий комментарий: что именно изменить и что обязательно оставить как есть. В видео здесь будет показан весь процесс на одном примере.</p>
+            <p>Откройте изображение в ChatGPT и нажмите «Редактировать». Если нужно поменять пропорции, выберите кнопку изменения формата. Если нужно поправить отдельную деталь, напишите короткий комментарий: что именно изменить и что обязательно оставить как есть.</p>
           </div>
 
           <div class="prompt-card">
@@ -686,7 +724,13 @@
             <span>готовый текст</span><b>→</b><span>оформление</span><b>→</b><span>слайды по одному</span><b>→</b><span>готовая карусель</span><b>→</b><span>точечное исправление</span>
           </div>
 
-          <!-- VIDEO SLOT: повтор всех шагов от готового текста до точечного исправления -->
+          <div class="video-card">
+            <div class="video-caption"><strong>Видео: повторяем весь путь самостоятельно</strong></div>
+            <div class="video-frame">
+              <iframe src="https://drive.google.com/file/d/1CAkHZ81Oj0YSqpcyT4BreBG-TSN5_v3f/preview" title="Финальное повторение практикума" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
+          </div>
+
           <div class="callout warm">
             <strong>Коротко: что повторить за видео</strong>
             <ol>
